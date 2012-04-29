@@ -1,0 +1,15 @@
+coverage/*.*
+log/*.*
+*~
+*.swp
+*.swo
+tmp/
+tmp/*.sp*
+public/assets/
+Thumbs.db
+*.tmproj
+*.sqlite3
+*.sqlite3-journal
+.rdoc_output_folder
+doc/Gems.rdoc
+doc/GitLog.rdoc

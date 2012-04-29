@@ -1,0 +1,15 @@
+%p#notice= notice
+
+%p
+  %b Name:
+  = @project.name
+%p
+  %b Source path:
+  = @project.source_path
+%p
+  %b Branch:
+  = @project.branch
+
+= link_to 'Edit', edit_project_path(@project)
+\|
+= link_to 'Back', projects_path

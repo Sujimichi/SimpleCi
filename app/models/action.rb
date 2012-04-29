@@ -1,20 +1,22 @@
 class Action < ActiveRecord::Base
+  require 'fileutils'
+  include ApplicationHelper
+
   belongs_to :project
+      
+  
+  def prepare
+    in_working_dir do 
+      #create temp folder (by self.id)
+      FileUtils.rm_rf("action_#{self.id}")
+      Dir.mkdir("action_#{self.id}")
 
-  def in_working_dir 
-    begin
-      Dir.chdir(SimpleCi::WorkingDir)
-    rescue
-      `mkdir '#{SimpleCi::WorkingDir}`
-      #Dir.mkdir(SimpleCi::WorkingDir)
-      Dir.chdir(SimpleCi::WorkingDir)
+      src = Dir.open("project_#{self.project_id}/#{self.project.repo_path}/")
+      dest= Dir.open("action_#{self.id}")
+
+      FileUtils.cp_r(src, dest)
+
     end
-  end
-
-  def run
-    in_working_dir
-    Dir.mkdir("action_#{self.id}")
-    #create temp folder (by self.id)
     #clone the projects source git into temp folder
     #run the command line action in the temp folder and store result.
     #

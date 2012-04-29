@@ -3,7 +3,7 @@ require File.expand_path('../application', __FILE__)
 
 module SimpleCi
   
-  WorkingDir = "#{ENV['home']}/simple_ci"
+  WorkingDir = "#{ENV['HOME']}/simple_ci"
 
 end
 

@@ -31,10 +31,11 @@ RSpec.configure do |config|
   config.infer_base_class_for_anonymous_controllers = false
 end
 
-def valid_project
+def valid_project attrs = {}
   name = Project.all.last.name unless Project.all.empty?
   name ||= "test project 0"
-  Project.create!(:name => name.next)
+  obj_attrs = {:name => name.next}.merge(attrs)
+  Project.create!(obj_attrs)
 end
 
 def valid_action attrs = {}
@@ -52,7 +53,36 @@ end
 
 def destroy_simple_project
   path = "#{ENV['HOME']}/simple_ci_testing"
-  `rm -r #{path}`
+  `rm -rf #{path}`
 end
 
 
+def dir path
+  DirData.new(path)
+end
+
+class DirData
+  def initialize path
+    @path = path
+  end
+
+  def is_present?
+    r= false
+    begin
+      Dir.open(@path)
+      r = true
+    rescue
+      #raise "it should have created dir: #{@action_dir}"
+    end
+    r
+  end
+  alias present? is_present?
+
+  def git_repo?
+    return false unless present?
+    Dir.chdir(@path)
+    s = `git status`
+    s.downcase.include?("on branch")
+  end
+
+end

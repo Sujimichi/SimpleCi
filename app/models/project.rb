@@ -12,6 +12,11 @@ class Project < ActiveRecord::Base
   has_many :results
 
 
+  after_create do 
+    Delayed::Job.enqueue(SetupProjectJob.new(self.id), :queue => :command_queue)
+  end
+
+
   def setup_commands
     ["bundle exec rake db:create:all", "bundle exec rake db:migrate","bundle exec rake db:test:prepare"]
   end
@@ -31,8 +36,7 @@ class Project < ActiveRecord::Base
       self.update_attributes(:repo_path => repo_dir)
 
       Dir.chdir(repo_dir)
-
-       
+      
       setup_commands.each do |command|
         Bundler.with_clean_env do
           `#{command}`

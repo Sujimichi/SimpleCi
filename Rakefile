@@ -44,3 +44,13 @@ namespace :workers do
   end
 
 end
+
+
+task :start_observer do 
+  require "#{Rails.root}/config/environment"
+  Delayed::Job.enqueue(ObserverJob.new(60), :queue => "command_queue")
+end
+
+task :reset do  
+  system "rake db:drop:all && rake db:create:all && rake db:migrate && rake db:test:prepare"
+end

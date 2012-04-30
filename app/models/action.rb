@@ -27,11 +27,17 @@ class Action < ActiveRecord::Base
   #Assuming that prepare has been called, run the command line stored on 'command' inside the app folder for this action
   def run_command
     in_working_dir do 
-      Dir.chdir("action_#{self.id}/#{self.project.repo_path}/") #go into the app dir within the actions' dir
-      r = `#{self.command}` #Run the command (yes yes no safty catches here yet, this is a dev tool!)
-      log = `git log -n 1`  #get the last commit log
+
+      Dir.chdir("action_#{self.id}/#{self.project.repo_path}") #go into the app dir within the actions' dir
+
+      r = nil
+      log = nil
+      Bundler.with_clean_env do 
+        r = `#{self.command}` #Run the command (yes yes no safty catches here yet, this is a dev tool!)
+        log = `git log -n 1`  #get the last commit log
+      end
+
       commit_id = log.split(" ")[1] #and get the commit id from it.
-      
       #Create a result and store the data returned by the command, the commit_it and project and action ids
       Result.create!(:action => self, :project => self.project, :data => r, :commit_id => commit_id)
 

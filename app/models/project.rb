@@ -32,15 +32,18 @@ class Project < ActiveRecord::Base
 
       Dir.chdir(repo_dir)
 
+       
       setup_commands.each do |command|
-        `#{command}`
+        Bundler.with_clean_env do
+          `#{command}`
+        end
       end
 
     end
   end
 
   def update_repo
-    updated = nil
+    updated = ""
     in_working_dir do 
       Dir.chdir("project_#{self.id}/#{self.repo_path}")
       updated = `git pull origin master`
@@ -50,21 +53,14 @@ class Project < ActiveRecord::Base
   end
 
   def do_work
-    require 'workers'
-
-    Workers.start
-    #threads = []
     self.actions.each do |action|
       action.prepare
     end
 
     self.actions.each do |action|
-      job = RunCommandJob.new(action.id)
-      Delayed::Job.enqueue(job, :queue => "command_queue") #and add it to the worker queue for 'reports'
-      
-      #threads << Thread.new{ action.run_command }
+      job = RunCommandJob.new(action.id)  #create a job to run the actions command
+      Delayed::Job.enqueue(job, :queue => "command_queue") #and add it to the worker queue 
     end
-    #threads.each{|t| t.join}
   end
 
   #pull from the source repo and if any changes call do_work

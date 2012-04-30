@@ -1,0 +1,25 @@
+!!!
+%html
+  %head
+    = stylesheet_link_tag    "application", :media => "all"
+    = javascript_include_tag "application"
+    <!--[if IE]><script language="javascript" type="text/javascript" src="/javascripts/excanvas.pack.js"></script><![endif]-->
+
+    = csrf_meta_tags
+
+    - content_for :title do
+      = "SimpleCi"
+    %title
+      = content_for :title
+
+  %body
+    #body
+      #header
+        #title
+          = content_for :title
+
+      .shadow_border
+      #content
+        =yield
+
+      #footer

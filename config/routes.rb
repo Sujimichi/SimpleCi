@@ -2,7 +2,10 @@ SimpleCi::Application.routes.draw do
 
   resources :results
   resources :actions
-  resources :projects
+  resources :projects do 
+    resources :results
+  end
+  
 
 
   # The priority is based upon order of creation:

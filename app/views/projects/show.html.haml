@@ -1,36 +1,60 @@
-%p#notice= notice
+#page.grid960
+
+  %p#notice= notice
 
 
-%h2= @project.name
-%p
-  = @project.source_path
-  = @project.branch
+  %h2= @project.name
+  %p
+    = @project.source_path
+    = @project.branch
 
+  .clear
+  .grid_6.alpha
+    %h3 Actions
+    - @project.actions.each do |action|
+      .left= action.command
+      .right= link_to 'Destroy', action, :confirm => 'Are you sure?', :method => :delete
+    .clear
 
-%h3 Actions
-- @project.actions.each do |action|
-  = action.command
-  = link_to 'Destroy', action, :confirm => 'Are you sure?', :method => :delete
+  .grid_6.omega
+    %h4 Add Action
+    = render("actions/form", :action => Action.new(:project_id => @project.id))
 
+  .clear
 
-%h4 Add Action
-= render("actions/form", :action => Action.new(:project_id => @project.id))
-
-
-%h3 Results
-- builds = @project.results.sort_by{|r| r.created_at}.reverse.group_by{|r| r.commit_id}
-
-- builds.each do |commit_id, results|
-
-  %h4= "Commit #{commit_id}"
-  - results.each do |result|
-    %h5= result.action.nil? ? "action deleted" : result.action.command
-    %pre
-      %code
-        = result.data
+  %h3 Results
+  #results_list
+    = render("results/list", :results => @project.results, :moo => true)
 
 
 
-= link_to 'Edit', edit_project_path(@project)
-\|
-= link_to 'Back', projects_path
+  = link_to 'Edit', edit_project_path(@project)
+  |
+  = link_to 'Back', projects_path
+
+:javascript
+
+  var poller = undefined
+
+  $(function(){
+    poll();
+  });
+
+  function poll(){
+    var data = {project_id: "#{@project.id}"}
+
+    $.ajax({ url: "/results", data: data, type: "GET", dataType: 'html', success: function(data,textStatus){
+      $('#results_list').html(data)
+    }, error: function(r,t,e){
+      alert(e)
+      alert(r.responseText)
+    }});
+
+
+    poller = setTimeout(function(){ poll() }, 5000);
+  };
+
+
+  function toggle_these_results(e){
+    $(e).parents('.results').find('.result_data').toggle('fast')
+  };

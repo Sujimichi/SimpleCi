@@ -48,6 +48,7 @@ end
 
 task :start_observer do 
   require "#{Rails.root}/config/environment"
+  Delayed::Job.destroy_all
   Delayed::Job.enqueue(ObserverJob.new(60), :queue => "command_queue")
 end
 

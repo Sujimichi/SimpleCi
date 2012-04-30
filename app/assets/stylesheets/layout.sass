@@ -1,0 +1,83 @@
+@import variables.sass
+
+
+html
+  :background-color #fff
+  :margin 0
+  :padding 0
+
+body
+  :padding 0
+  :margin 0
+  :font-family arial, "helvetica neue", helvetica, "lucida grande", sans-serif
+  //:font 1em Helvetica, Arial, sans-serif
+  :color #666
+  :height 100%
+  :min-width 960px
+  :position relative
+  :text-align justify
+  :background-color #fff
+
+a
+  :outline none
+  :text-decoration none
+  :color $link_font_color_normal
+  &:hover
+    :color $link_font_color_hover
+  @extend .highlighted_link
+
+p
+  :margin
+    :top 0.5em
+    :bottom 0.5em
+
+
+.heading
+  :margin-bottom 0.2em
+  :color $font-color_heading
+  :font
+    :weight bold
+
+.label
+  :color $font-color_label
+  :font-weight bold
+
+h1
+  @extend .heading
+  :font-size 200%
+h2
+  @extend .heading
+  :font-size 150%
+h3
+  @extend .heading
+  :font-size 120%
+h4
+  @extend .heading
+  :font-size 100%
+h5
+  @extend .heading
+  :font-size 90%
+h6
+  @extend .heading
+  :font-size 60%
+
+
+@import grid960.sass
+@import ajax_loaders.sass
+@import utils.sass
+
+
+#header
+  :position relative
+  @extend .plain_links
+  :background-color $color_header
+  :overflow show
+  :height 2.4em
+  :max-height 2.4em
+
+  #title
+    :font-size 200%
+    :color #fff
+
+#content
+  @extend .grid960

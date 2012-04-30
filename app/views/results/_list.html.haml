@@ -1,0 +1,16 @@
+- moo ||= nil
+- builds = results.sort_by{|r| r.created_at}.reverse.group_by{|r| r.commit_id}
+
+- builds.each do |commit_id, results|
+
+  %h4
+    = "Commit #{commit_id}"
+  - results.each do |result|
+    .results
+      %h5
+        -t = result.action.nil? ? "action deleted" : result.action.command
+        = link_to_function t, "toggle_these_results(this)"
+      .result_data
+        %pre
+          %code
+            = result.data

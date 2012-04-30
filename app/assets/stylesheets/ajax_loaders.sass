@@ -1,0 +1,83 @@
+@import variables.sass
+//Ajax Loaders
+.small_ajax_loader
+  :min-width 24px
+  :max-width 24px
+  :min-height 1.2em
+  :background
+    :image $small_ajax_loader
+    :repeat no-repeat
+    :color transparent
+
+.ajax_link_holder
+  :float left
+  :position relative
+  :margin
+    :left 0.1em
+    :top 0.1em
+  :min-height 1em
+  :width 10px
+
+
+.link_loader
+  :position absolute
+  :left 1em
+  :min-height 1.2em
+  :width 24px
+  :background
+    :image $small_ajax_loader
+    :repeat no-repeat
+    :color transparent
+
+.button_loader
+  :margin 0 auto
+  :width 24px
+  :background
+    :image $small_ajax_loader
+    :repeat no-repeat
+    :color transparent
+  :color transparent
+
+
+.two_step
+  :float left
+
+.jvr_ajax_loader
+  :min-width 45px
+  :min-height 30px
+  :background
+    :image url(/images/ajax_loader-jvr.gif)
+    :repeat no-repeat
+    :color transparent
+
+.loader_spacer
+  :height 0.5em
+
+.panel_loader
+  :margin-left 0.5em
+  :min-width 64px
+  :min-height 68px
+  :background
+    :image url(/images/ajax_loader-panel.gif)
+    :repeat no-repeat
+    :color transparent
+
+.report_loader
+  :float left
+  :margin
+    :top 0.2em
+    :left 0.2em
+  :min-width 100px
+  :min-height 12px
+  :background
+    :image url(/images/ajax_loader-report.gif)
+    :repeat no-repeat
+    :color transparent
+
+.jvr_report-not_ready
+  &:hover
+    .report_loader
+      :background
+        :image url(/images/ajax_loader-report-hover.gif)
+        :repeat no-repeat
+        :color transparent

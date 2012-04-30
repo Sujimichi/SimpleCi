@@ -1,21 +1,28 @@
 %p#notice= notice
 
+
+%h2= @project.name
 %p
-  %b Name:
-  = @project.name
-%p
-  %b Source path:
   = @project.source_path
-%p
-  %b Branch:
   = @project.branch
 
+
+%h3 Actions
 - @project.actions.each do |action|
   = action.command
+  = link_to 'Destroy', action, :confirm => 'Are you sure?', :method => :delete
 
+
+%h4 Add Action
+= render("actions/form", :action => Action.new(:project_id => @project.id))
+
+
+%h3 Results
 - @project.results.each do |result|
-  = result.commit_id
-  = result.data.truncate(100)
+  %h5= result.commit_id
+  .value= result.data
+
+
 
 = link_to 'Edit', edit_project_path(@project)
 \|

@@ -1,5 +1,9 @@
 SimpleCi::Application.routes.draw do
+
+  resources :results
+  resources :actions
   resources :projects
+
 
   # The priority is based upon order of creation:
   # first created -> highest priority.

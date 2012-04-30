@@ -1,0 +1,9 @@
+
+= form_for action, :as => "action_data"do |f|
+
+  .field
+    = f.label :command
+    = f.text_field :command
+    = f.text_field :project_id
+
+  = f.submit 'Save'

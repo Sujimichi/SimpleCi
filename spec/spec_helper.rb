@@ -98,3 +98,12 @@ class DirData
   end
 
 end
+
+
+class Delayed::Job
+
+  def self.enqueue(job, *args)
+    job.perform
+  end
+
+end

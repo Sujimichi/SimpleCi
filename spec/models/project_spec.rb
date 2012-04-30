@@ -1,5 +1,5 @@
 require 'spec_helper'
-require "workers"
+
 describe Project do
 
   before(:all) do 
@@ -7,16 +7,13 @@ describe Project do
       #FileUtils.rm_rf("#{ENV['HOME']}/simple_ci/")
     end
     setup_simple_project
-    Workers.start
   end
 
   after(:all) do 
     destroy_simple_project
-    Workers.stop
   end
   
   before(:each) do 
-    Delayed::Job.destroy_all
 
     @project = valid_project
     @act1 = valid_action
@@ -29,6 +26,7 @@ describe Project do
     @project.actions.should be_a(Array)
     @project.actions.should == [@act1, @act2]
   end
+
 
   describe "initial_setup" do 
     before(:each) do 
@@ -115,18 +113,32 @@ describe Project do
     
   end
 
-
   describe "do work" do 
+    before(:each) do 
+      @project.stub!(:source_path => "#{ENV['HOME']}/simple_ci_testing/simple_project", :repo_path => "simple_project")
+      @project.stub!(:setup_commands => []) #just to skip the commands on this test
+      @project.initial_setup    
+    end
 
-    it 'should call run on each of the projects actions' do 
+    it 'should call prepare on each action' do 
       @act1.should_receive(:prepare).once
-      @act1.should_receive(:run_command).once
       @act2.should_receive(:prepare).once
-      @act2.should_receive(:run_command).once
+      Delayed::Job.stub!(:enqueue => false)
+
+
       @project.stub!(:actions => [@act1, @act2])
       @project.do_work
     end
 
+    it 'should add a job to the worker queue' do 
+      job = Class.new
+      RunCommandJob.should_receive(:new).with(@act1.id).once.and_return(job)
+      RunCommandJob.should_receive(:new).with(@act2.id).once.and_return(job)
+      job.should_receive(:perform).twice
+      @project.do_work
+    end
+
   end
+
 
 end

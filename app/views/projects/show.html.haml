@@ -10,6 +10,13 @@
   %b Branch:
   = @project.branch
 
+- @project.actions.each do |action|
+  = action.command
+
+- @project.results.each do |result|
+  = result.commit_id
+  = result.data.truncate(100)
+
 = link_to 'Edit', edit_project_path(@project)
 \|
 = link_to 'Back', projects_path

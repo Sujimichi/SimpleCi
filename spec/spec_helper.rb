@@ -56,6 +56,18 @@ def destroy_simple_project
   `rm -rf #{path}`
 end
 
+def insert_commit_to_simple_project args = {}, &blk
+  d = Dir.getwd
+  args[:message] ||= "added a test file"
+  path = "#{ENV['HOME']}/simple_ci_testing/simple_project"
+  Dir.chdir(path)
+  
+  yield
+
+  `git add ./`
+  `git commit -m \"#{args[:message]}\"`
+  Dir.chdir(d)
+end
 
 def dir path
   DirData.new(path)

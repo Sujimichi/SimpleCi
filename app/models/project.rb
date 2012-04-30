@@ -1,6 +1,7 @@
 #Projects are the apps which SimpleCi will monitor.  Each project holds basic info ie: source repo url and provides some actions to control the project.
 #
-#When a project is created the initial_setup method is called.  This clones the source repo into a project specific dir in simple_ci/ in the home dir.  initial_setup will also call each command in setup_commands to be run within the cloned repo.  
+#When a project is created the initial_setup method is called.  This clones the source repo into a project specific dir in simple_ci/ in the home dir.  
+#initial_setup will also call each command in setup_commands to be run within the cloned repo.  
 #
 #
 class Project < ActiveRecord::Base
@@ -49,10 +50,21 @@ class Project < ActiveRecord::Base
   end
 
   def do_work
+    require 'workers'
+
+    Workers.start
+    #threads = []
     self.actions.each do |action|
       action.prepare
-      action.run_command
     end
+
+    self.actions.each do |action|
+      job = RunCommandJob.new(action.id)
+      Delayed::Job.enqueue(job, :queue => "command_queue") #and add it to the worker queue for 'reports'
+      
+      #threads << Thread.new{ action.run_command }
+    end
+    #threads.each{|t| t.join}
   end
 
   #pull from the source repo and if any changes call do_work

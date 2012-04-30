@@ -18,9 +18,16 @@
 
 
 %h3 Results
-- @project.results.each do |result|
-  %h5= result.commit_id
-  .value= result.data
+- builds = @project.results.sort_by{|r| r.created_at}.reverse.group_by{|r| r.commit_id}
+
+- builds.each do |commit_id, results|
+
+  %h4= "Commit #{commit_id}"
+  - results.each do |result|
+    %h5= result.action.nil? ? "action deleted" : result.action.command
+    %pre
+      %code
+        = result.data
 
 
 

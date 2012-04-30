@@ -9,6 +9,10 @@ gem 'jquery-rails'
 
 gem 'sqlite3'
 
+gem 'delayed_job'
+gem 'delayed_job_active_record'
+gem 'dalli'
+gem 'daemons'
 
 group :development do
   gem 'rails3-generators'

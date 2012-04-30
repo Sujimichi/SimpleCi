@@ -1,5 +1,5 @@
 require 'spec_helper'
-
+require "workers"
 describe Project do
 
   before(:all) do 
@@ -7,13 +7,17 @@ describe Project do
       #FileUtils.rm_rf("#{ENV['HOME']}/simple_ci/")
     end
     setup_simple_project
+    Workers.start
   end
 
   after(:all) do 
     destroy_simple_project
+    Workers.stop
   end
   
   before(:each) do 
+    Delayed::Job.destroy_all
+
     @project = valid_project
     @act1 = valid_action
     @act2 = valid_action

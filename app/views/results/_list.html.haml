@@ -1,16 +1,43 @@
-- moo ||= nil
-- builds = results.sort_by{|r| r.created_at}.reverse.group_by{|r| r.commit_id}
+- unless results.empty?
+  - last_r_id = results.sort_by{|r| r.id}.last.id
+  :javascript
+    $(function(){
+      $('#last_result_id').val("#{last_r_id}");
+    });
 
-- builds.each do |commit_id, results|
 
-  %h4
-    = "Commit #{commit_id}"
-  - results.each do |result|
-    .results
-      %h5
-        -t = result.action.nil? ? "action deleted" : result.action.command
-        = link_to_function t, "toggle_these_results(this)"
-      .result_data
-        %pre
-          %code
-            = result.data
+  - builds = results.sort_by{|r| r.created_at}.reverse.group_by{|r| r.commit_id}
+
+  - builds.each do |commit_id, results|
+    :javascript
+      $(function(){
+        remove_existing_commit("#{commit_id}")
+      });
+    .commit{:class => commit_id}
+      %h4
+        = "Commit #{commit_id}"
+      - results.each do |result|
+        - d= result.display
+        - c = "undefined"
+        - c = "failure" if d[:status].eql?(:failure)
+        - c = "success" if d[:status].eql?(:success)
+        .results
+          .details{:class => c, :onclick => "toggle_these_results(this)"}
+            %h5
+              = result.action.nil? ? "action deleted" : result.action.command
+
+            .result_outcome
+              - if d[:status].eql?(:success)
+                = "Passed"
+              - elsif d[:status].eql?(:failure)
+                = "Failed!"
+              - else
+                = "outcome uncertain"
+              .clear
+            = "Time taken: #{d[:seconds]} seconds"
+
+
+          .result_data.hidden
+            %pre
+              %code
+                = result.data

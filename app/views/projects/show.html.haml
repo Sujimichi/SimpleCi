@@ -8,6 +8,10 @@
     = @project.source_path
     = @project.branch
 
+  = link_to 'Edit', edit_project_path(@project)
+  |
+  = link_to 'Back', projects_path
+
   .clear
   .grid_6.alpha
     %h3 Actions
@@ -23,37 +27,72 @@
   .clear
 
   %h3 Results
+  #job_count
+
   #results_list
-    = render("results/list", :results => @project.results, :moo => true)
+    .list_holder
+      = render("results/list", :results => @project.results, :project => @project)
 
+  = hidden_field_tag :last_result_id
 
-
-  = link_to 'Edit', edit_project_path(@project)
-  |
-  = link_to 'Back', projects_path
 
 :javascript
 
   var poller = undefined
+
+
+
 
   $(function(){
     poll();
   });
 
   function poll(){
-    var data = {project_id: "#{@project.id}"}
+    var last_result_id = $('#last_result_id').val();
+    var data = {project_id: "#{@project.id}", last_result_id: last_result_id}
 
-    $.ajax({ url: "/results", data: data, type: "GET", dataType: 'html', success: function(data,textStatus){
-      $('#results_list').html(data)
-    }, error: function(r,t,e){
+    $.ajax({ url: "/projects/#{@project.id}", data: {get_job_count: true}, type: "GET", dataType: 'script', success: function(data,textStatus){
+      if(parseInt(data) == 0){
+        $('#job_count').html("");
+      }else{
+        $('#job_count').html("Currently processing " + data + " actions....");
+      };
+    },error: function(r,t,e){
       alert(e)
       alert(r.responseText)
-    }});
+    }})
+
+
+    if(last_result_id != undefined){
+
+      $.ajax({ url: "/results", data: data, type: "GET", dataType: 'html', success: function(data,textStatus){
+        if(data != ""){
+          $('#results_list').prepend("<div class='list_holder hidden'></div>")
+          $('.list_holder').removeClass("lastest_result")
+          if( $('.list_holder').size() ==  1){
+            $('.list_holder').html(data);
+            $('.list_holder').show('fast')
+            $('.list_holder').addClass("lastest_result")
+          }else{
+            $('.list_holder:first').html(data);
+            $('.list_holder:first').show('fast')
+            $('.list_holder:first').addClass("lastest_result")
+          };
+        };
+
+      }, error: function(r,t,e){
+        alert(e)
+        alert(r.responseText)
+      }});
+    };
 
 
     poller = setTimeout(function(){ poll() }, 5000);
   };
 
+  function remove_existing_commit(commit_id){
+    $("." + commit_id + ":not(:first)").remove();
+  };
 
   function toggle_these_results(e){
     $(e).parents('.results').find('.result_data').toggle('fast')

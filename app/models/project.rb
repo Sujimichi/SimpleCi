@@ -18,7 +18,7 @@ class Project < ActiveRecord::Base
 
 
   def setup_commands
-    ["bundle exec rake db:create:all", "bundle exec rake db:migrate","bundle exec rake db:test:prepare"]
+    ["bundle install", "bundle exec rake db:create:all", "bundle exec rake db:migrate","bundle exec rake db:test:prepare"]
   end
 
   def update_commands
@@ -49,8 +49,13 @@ class Project < ActiveRecord::Base
   def update_repo
     updated = ""
     in_working_dir do 
-      Dir.chdir("project_#{self.id}/#{self.repo_path}")
-      updated = `git pull origin master`
+      if Dir.open("./").to_a.include?("project_#{self.id}")
+        Dir.chdir("project_#{self.id}/#{self.repo_path}")
+        updated = `git pull origin master`
+      else
+        initial_setup
+        return true
+      end
     end
     
     !updated.downcase.include?("already up-to-date")

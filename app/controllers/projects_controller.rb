@@ -10,14 +10,16 @@ class ProjectsController < ApplicationController
     end
   end
 
-  # GET /projects/1
-  # GET /projects/1.json
   def show
     @project = Project.find(params[:id])
-
     respond_to do |format|
-      format.html # show.html.erb
-      format.json { render json: @project }
+      format.html {} 
+      format.js {
+        if params[:get_job_count]
+          count = @project.actions.map{|a|  Rails.cache.fetch("action_#{a.id}:started").eql?(true) ? 1 : 0 }.sum
+          return render :text => count
+        end
+      }
     end
   end
 

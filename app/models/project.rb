@@ -18,7 +18,7 @@ class Project < ActiveRecord::Base
 
 
   def setup_commands
-    ["bundle install", "bundle exec rake db:create:all", "bundle exec rake db:migrate","bundle exec rake db:test:prepare"]
+    ["bundle install", "mkdir tmp && mkdir tmp/pids", "bundle exec rake db:create:all", "bundle exec rake db:migrate","bundle exec rake db:test:prepare"]
   end
 
   def update_commands

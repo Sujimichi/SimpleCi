@@ -52,7 +52,7 @@ class RspecMatcher < ResultMatcher
         output[:status] = :failure
       end
       
-      output[:seconds] = result.split("Finished in").last.split("seconds").first.to_f
+      output[:time] = result.split("\n").select{|line| line.match(/^Finished in/)}.join.sub("Finished in","")
     end
   end
 
@@ -78,15 +78,15 @@ class CucumberMatcher < ResultMatcher
       output[:summary] = summary.join
 
 
-      if summary.include?("fail")
-        output[:status] = :success
-      else
+      if output[:summary].include?("fail")
         output[:status] = :failure
+      else
+        output[:status] = :success       
       end
 
       
 
-      output[:seconds] = result.split("\n").last
+      output[:time] = result.split("\n").last
     end
   end
 

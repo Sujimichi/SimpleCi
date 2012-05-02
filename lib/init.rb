@@ -23,9 +23,12 @@ module SimpleCi
         system "rake start_observer"
         puts "done"
 
-      else
+      elsif ARGV.include?("--thread")
         puts "Starting Threaded Runner"
-        runner_pid = Kernel.spawn("rake runner")
+        runner_pid = nil
+        Bundler.with_clean_env do 
+          runner_pid = Kernel.spawn("rake runner")
+        end
         puts "Runner forked. PID: #{runner_pid} - use kill #{runner_pid} to stop the runner"
       end
 

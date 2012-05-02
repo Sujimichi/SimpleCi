@@ -1,18 +1,14 @@
 - unless results.empty?
   - last_r_id = results.sort_by{|r| r.id}.last.id
   :javascript
-    $(function(){
-      $('#last_result_id').val("#{last_r_id}");
-    });
+    $(function(){ $('#last_result_id').val("#{last_r_id}") });
 
 
   - builds = results.sort_by{|r| r.created_at}.reverse.group_by{|r| r.commit_id}
 
   - builds.each do |commit_id, results|
     :javascript
-      $(function(){
-        remove_existing_commit("#{commit_id}")
-      });
+      $(function(){ remove_existing_commit("#{commit_id}") });
     .commit{:class => commit_id}
       %h4
         = "Commit #{commit_id}"
@@ -34,9 +30,9 @@
                 = "outcome uncertain"
               .clear
               = d[:summary]
-            = "Time taken: #{d[:seconds]} seconds"
+            = "Time taken: #{d[:time]}"
 
-          //.small= d.inspect
+          .small= d.inspect
 
           .result_data.hidden
             %pre

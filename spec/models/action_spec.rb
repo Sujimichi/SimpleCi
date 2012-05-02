@@ -20,6 +20,7 @@ describe Action do
   end
 
   before(:each) do 
+    Rails.cache.clear
     @project = valid_project(:source_path => "#{ENV['HOME']}/simple_ci_testing/simple_project")
     @action = valid_action #will also create @project
     @action_dir = "#{ENV['HOME']}/simple_ci/action_#{@action.id}"

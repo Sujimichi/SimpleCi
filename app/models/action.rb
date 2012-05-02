@@ -41,7 +41,7 @@ class Action < ActiveRecord::Base
 
       Dir.chdir(repo_path) #go into the app dir within the actions' dir
 
-      thread = Thread.new{
+      thread = (Rails.env.eql?("test") ? FakeThread : Thread).new{
         r = nil
         log = nil
         Bundler.with_clean_env do 
@@ -53,9 +53,10 @@ class Action < ActiveRecord::Base
         #Create a result and store the data returned by the command, the commit_it and project and action ids
         r = Result.new(:action => self, :project_id => self.project_id, :data => r, :commit_id => commit_id)
         r.save
-        Rails.cache.write("action_#{self.id}:started", false)
 
         ActiveRecord::Base.connection.close #close connection to DB
+        Rails.cache.write("action_#{self.id}:started", false)
+
       }
 
       sleep 1

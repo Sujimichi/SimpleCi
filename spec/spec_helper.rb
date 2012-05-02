@@ -73,6 +73,15 @@ def dir path
   DirData.new(path)
 end
 
+class FakeThread
+
+  def initialize &blk
+    yield
+  end
+  def join
+  end
+end
+
 class DirData
   def initialize path
     @path = path

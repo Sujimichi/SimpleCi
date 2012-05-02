@@ -3,9 +3,6 @@ require 'spec_helper'
 describe Project do
 
   before(:all) do 
-    if dir("#{ENV['HOME']}/simple_ci/").is_present?
-      #FileUtils.rm_rf("#{ENV['HOME']}/simple_ci/")
-    end
     setup_simple_project
   end
 

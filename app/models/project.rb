@@ -13,7 +13,7 @@ class Project < ActiveRecord::Base
 
 
   after_create do 
-    Delayed::Job.enqueue(SetupProjectJob.new(self.id), :queue => :command_queue)
+    #Delayed::Job.enqueue(SetupProjectJob.new(self.id), :queue => :command_queue)
   end
 
 
@@ -77,5 +77,13 @@ class Project < ActiveRecord::Base
     do_work if update_repo || self.results.empty?
   end
 
+  def basic_poll
+    if update_repo || self.results.empty?
+      self.actions.each do |action|
+        action.prepare
+        action.run_command
+      end
+    end
+  end
 
 end

@@ -26,7 +26,7 @@ describe Project do
       Action.create!(:command => "bundle exec rspec", :project => @project)
       @project.reload.actions.size.should == 1
 
-      @project.poll
+      @project.basic_poll
 
       @project.reload.results.size.should == 1
       Result.first.commit_id.should == "dd482a81c13a07b1c233c4d70e9e7c18cb7c2a21"
@@ -41,13 +41,13 @@ describe Project do
       Action.create!(:command => "bundle exec rspec", :project => @project)
       @project.reload.actions.size.should == 1
 
-      @project.poll
+      @project.basic_poll
 
       insert_commit_to_simple_project(:message => "adding another failing spec") do 
         File.open("spec/models/another_spec.rb",'w'){|file| file.write(FileData.simple_failing_spec) }
       end
 
-      @project.poll
+      @project.basic_poll
 
       Result.all.size.should == 2
       Result.first.data.should be_include("31 examples, 1 failure, 1 pending")

@@ -6,14 +6,21 @@
         - @project.errors.full_messages.each do |msg|
           %li= msg
 
-  .field
-    = f.label :name
-    = f.text_field :name
-  .field
-    = f.label :source_path
-    = f.text_field :source_path
-  .field
-    = f.label :branch
-    = f.text_field :branch
+  .css_table
+    .label= f.label :name
+    .value= f.text_field :name
+  .css_table
+    .label= f.label :source_path
+    .value= f.text_field :source_path
+  .css_table
+    .label= f.label :branch
+    .value= f.text_field :branch
+  .css_table
+    .label= f.label :setup_commands
+    .value= f.text_area :setup_commands, {:value => @project.setup_commands, :rows => 5}
+  .css_table
+    .label= f.label :update_commands
+    .value= f.text_area :update_commands, {:value => @project.update_commands, :rows => 5}
+
   .actions
     = f.submit 'Save'

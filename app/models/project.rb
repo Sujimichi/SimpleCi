@@ -12,17 +12,22 @@ class Project < ActiveRecord::Base
   has_many :results
 
 
-  after_create do 
-    #Delayed::Job.enqueue(SetupProjectJob.new(self.id), :queue => :command_queue)
-  end
-
-
-  def setup_commands
-    ["bundle install", "mkdir tmp && mkdir tmp/pids", "bundle exec rake db:create:all", "bundle exec rake db:migrate","bundle exec rake db:test:prepare"]
+  #["bundle install", "mkdir tmp && mkdir tmp/pids", "bundle exec rake db:create:all", "bundle exec rake db:migrate","bundle exec rake db:test:prepare"]
+  def setup_commands    
+    s = super
+    s.gsub("'","")
   end
 
   def update_commands
-    ["bundle exec rake db:migrate","bundle exec rake db:test:prepare"]
+    s = super
+    s.gsub("'","")
+  end
+
+  def run_commands commands
+    commands.split("\n").each do |command|
+      puts "Running #{command}"
+      Bundler.with_clean_env { `#{command}` }
+    end
   end
 
   def initial_setup
@@ -32,17 +37,9 @@ class Project < ActiveRecord::Base
       Dir.chdir("project_#{self.id}")
       path = `git clone #{self.source_path}`
       repo_dir = path.split("project_#{self.id}/").last.split("/").first
-
       self.update_attributes(:repo_path => repo_dir)
-
       Dir.chdir(repo_dir)
-      
-      setup_commands.each do |command|
-        Bundler.with_clean_env do
-          `#{command}`
-        end
-      end
-
+      run_commands(self.setup_commands)
     end
   end
 
@@ -52,15 +49,17 @@ class Project < ActiveRecord::Base
       if Dir.open("./").to_a.include?("project_#{self.id}")
         Dir.chdir("project_#{self.id}/#{self.repo_path}")
         updated = `git pull origin master`
+        run_commands(self.update_commands)
       else
         initial_setup
         return true
       end
-    end
-    
+    end    
     !updated.downcase.include?("already up-to-date")
   end
 
+  #do_work should only be used when working with background workers
+  #user Runner to work with threads or basic_poll for sequential processing
   def do_work
     self.actions.each do |action|
       action.prepare
@@ -73,10 +72,12 @@ class Project < ActiveRecord::Base
   end
 
   #pull from the source repo and if any changes call do_work
+  #poll (which calls do_work) should only be used when working with background workers
   def poll
     do_work if update_repo || self.results.empty?
   end
 
+  #processes the actions sequentialy without threads or background workers
   def basic_poll
     if update_repo || self.results.empty?
       self.actions.each do |action|

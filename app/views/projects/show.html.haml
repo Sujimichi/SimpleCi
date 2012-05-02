@@ -5,8 +5,20 @@
 
     %h1= @project.name
     %p
-      = @project.source_path
-      = @project.branch
+      .value= @project.source_path
+      .value= @project.branch
+
+      %h5 Setup Commands
+      - @project.setup_commands.split("\n").each do |com|
+        .value
+        = "#{ENV['USER']}@#{Socket.gethostname}:~$ #{com}"
+
+      %h5 Update Commands
+      - @project.update_commands.split("\n").each do |com|
+        .value
+        = "#{ENV['USER']}@#{Socket.gethostname}:~$ #{com}"
+
+
 
     = link_to 'Edit', edit_project_path(@project)
     |
@@ -36,15 +48,9 @@
 
 
 :javascript
+  var poller = undefined;
 
-  var poller = undefined
-
-
-
-
-  $(function(){
-    poll();
-  });
+  $(function(){ poll() });
 
   function poll(){
     var last_result_id = $('#last_result_id').val();
@@ -79,6 +85,7 @@
           };
         };
 
+        poller = setTimeout(function(){ poll() }, 5000);
       }, error: function(r,t,e){
         alert(e)
         alert(r.responseText)
@@ -86,7 +93,6 @@
     };
 
 
-    poller = setTimeout(function(){ poll() }, 5000);
   };
 
   function remove_existing_commit(commit_id){

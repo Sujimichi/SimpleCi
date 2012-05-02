@@ -6,6 +6,9 @@ class CreateResults < ActiveRecord::Migration
       t.string :commit_id
       t.text :data
 
+      t.string :command
+      t.string :full_log
+
       t.timestamps
     end
   end

@@ -1,39 +1,38 @@
 #page.grid960
+  .grid_12
+    %p#notice= notice
 
-  %p#notice= notice
 
+    %h1= @project.name
+    %p
+      = @project.source_path
+      = @project.branch
 
-  %h2= @project.name
-  %p
-    = @project.source_path
-    = @project.branch
+    = link_to 'Edit', edit_project_path(@project)
+    |
+    = link_to 'Back', projects_path
 
-  = link_to 'Edit', edit_project_path(@project)
-  |
-  = link_to 'Back', projects_path
-
-  .clear
-  .grid_6.alpha
-    %h3 Actions
+  .grid_12
+    %h2 Actions
     - @project.actions.each do |action|
       .left= action.command
       .right= link_to 'Destroy', action, :confirm => 'Are you sure?', :method => :delete
-    .clear
+      .clear
 
-  .grid_6.omega
+  .grid_12
     %h4 Add Action
     = render("actions/form", :action => Action.new(:project_id => @project.id))
 
-  .clear
+  .grid_12
 
-  %h3 Results
-  #job_count
+    %h2 Results
+    #job_count
 
-  #results_list
-    .list_holder
-      = render("results/list", :results => @project.results, :project => @project)
+    #results_list
+      .list_holder
+        = render("results/list", :results => @project.results, :project => @project)
 
-  = hidden_field_tag :last_result_id
+    = hidden_field_tag :last_result_id
 
 
 :javascript

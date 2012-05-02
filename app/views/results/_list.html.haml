@@ -23,8 +23,7 @@
         - c = "success" if d[:status].eql?(:success)
         .results
           .details{:class => c, :onclick => "toggle_these_results(this)"}
-            %h5
-              = result.action.nil? ? "action deleted" : result.action.command
+            .command= result.action.nil? ? "action deleted" : result.action.command
 
             .result_outcome
               - if d[:status].eql?(:success)
@@ -34,10 +33,15 @@
               - else
                 = "outcome uncertain"
               .clear
+              = d[:summary]
             = "Time taken: #{d[:seconds]} seconds"
 
+          //.small= d.inspect
 
           .result_data.hidden
             %pre
               %code
-                = result.data
+                - if d[:altered_result]
+                  = d[:altered_result]
+                -else
+                  = result.data

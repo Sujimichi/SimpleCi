@@ -7,7 +7,7 @@ class Runner
 
 
   def do_process
-    @sleep = Rails.env.eql?("development") ? 20 : 60
+    @sleep = 60
 
     puts "checking projects..."
     threads = []    
@@ -15,7 +15,7 @@ class Runner
 
 
     Project.all.each do |project|
-      if project.update_repo || project.results.empty?
+      if project.update_repo || project.results.empty? || Rails.cache.fetch("force_update")
         puts "updating project #{project.name}"
         project.actions.each do |action| 
           action.prepare

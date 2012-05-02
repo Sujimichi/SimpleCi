@@ -55,3 +55,9 @@ end
 task :reset do  
   system "rake db:drop:all && rake db:create:all && rake db:migrate && rake db:test:prepare"
 end
+
+task :runner do 
+  require "#{Rails.root}/config/environment"  
+  require 'runner'
+  Runner.start
+end

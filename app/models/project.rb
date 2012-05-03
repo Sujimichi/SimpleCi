@@ -1,8 +1,13 @@
-#Projects are the apps which SimpleCi will monitor.  Each project holds basic info ie: source repo url and provides some actions to control the project.
+#A project represents a repository which is being monitored.  Each project holds basic info ie: source repo url.
+#A project also define setup and maintaince actions (ie rake tasks) to initilize and update the repo.
 #
-#When a project is created the initial_setup method is called.  This clones the source repo into a project specific dir in simple_ci/ in the home dir.  
-#initial_setup will also call each command in setup_commands to be run within the cloned repo.  
+#Once a project has been created it will be initialised by the background poller (either Runner or ObserverJob *see note about running modes) 
+#Initialization involves cloning the projects source repo into a project folder (name project_<id>) in the working directory (SimpleCi::WorkingDir (default ~/simple_ci/.  Once cloned each of the setup commands are then run in the project folder.  
+#This completes initialization.  At any stage the project folder can be deleted and it will just be re-initialized when the background poller comes back to it.  (deleting it during some action running in that dir might be interesting).
 #
+#Once a project is initialized the background poller periodically checks the source repo for changes.  If any are found they are pulled to the repo in the project folder and any update commands are run.  
+#
+#Once initialised if the project has any actions then the poller will run these.  Once an action has completed it stores the response in a new Result object.  Note! - Actions are processed in parrallel and in different dirs, which is tricker than changing plane at Ohare.  See more on Action about this.
 #
 class Project < ActiveRecord::Base
   require 'fileutils'
@@ -11,8 +16,6 @@ class Project < ActiveRecord::Base
   has_many :actions
   has_many :results
 
-
-  #["bundle install", "mkdir tmp && mkdir tmp/pids", "bundle exec rake db:create:all", "bundle exec rake db:migrate","bundle exec rake db:test:prepare"]
   def setup_commands    
     s = super
     s.gsub("'","")
@@ -23,11 +26,22 @@ class Project < ActiveRecord::Base
     s.gsub("'","")
   end
 
-  def run_commands commands
-    commands.split("\n").each do |command|
+  def run_commands command = :setup
+    if command.eql?(:setup)
+      commands = setup_commands.split("\n") 
+      act = "project_#{self.id}_initializing"
+    elsif command.eql?(:update)
+      commands = update_commands.split("\n") 
+      act = "project_#{self.id}_updating"
+    end
+
+    commands.each do |command|
+      Rails.cache.write(act, command.inspect)
       puts "Running #{command}"
       Bundler.with_clean_env { `#{command}` }
     end
+
+    Rails.cache.write(act, false)
   end
 
   def initial_setup
@@ -39,7 +53,7 @@ class Project < ActiveRecord::Base
       repo_dir = path.split("project_#{self.id}/").last.split("/").first
       self.update_attributes(:repo_path => repo_dir)
       Dir.chdir(repo_dir)
-      run_commands(self.setup_commands)
+      run_commands(:setup)
     end
   end
 
@@ -48,14 +62,16 @@ class Project < ActiveRecord::Base
     in_working_dir do 
       if Dir.open("./").to_a.include?("project_#{self.id}")
         Dir.chdir("project_#{self.id}/#{self.repo_path}")
-        updated = `git pull origin master`
-        run_commands(self.update_commands)
+        r = `git pull origin master`
+        updated = !r.downcase.include?("already up-to-date")
+
+        run_commands(:update) if updated
       else
         initial_setup
         return true
       end
     end    
-    !updated.downcase.include?("already up-to-date")
+    updated
   end
 
   #do_work should only be used when working with background workers

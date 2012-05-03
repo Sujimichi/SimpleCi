@@ -8,6 +8,7 @@ class CreateResults < ActiveRecord::Migration
 
       t.string :command
       t.string :full_log
+      t.string :result_matcher
 
       t.timestamps
     end

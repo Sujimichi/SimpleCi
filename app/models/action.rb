@@ -42,17 +42,27 @@ class Action < ActiveRecord::Base
       Dir.chdir(repo_path) #go into the app dir within the actions' dir
 
       thread = (Rails.env.eql?("test") ? FakeThread : Thread).new{
-        r = nil
+        command_response = nil
         log = nil
         Bundler.with_clean_env do 
           log = `git log -n 1`  #get the last commit log
-          r = `#{self.command}` #Run the command (yes yes no safty catches here yet, this is a dev tool!)
+          command_response = `#{self.command}` #Run the command (yes yes no safty catches here yet, this is a dev tool!)
         end
 
         commit_id = log.split(" ")[1] #and get the commit id from it.
         #Create a result and store the data returned by the command, the commit_it and project and action ids
-        r = Result.new(:action => self, :project_id => self.project_id, :data => r, :commit_id => commit_id)
-        r.save
+    
+      
+        result = Result.new(
+          :action => self, 
+          :project_id => self.project_id, 
+          :data => command_response, 
+          :commit_id => commit_id, 
+          :command => self.command, 
+          :full_log => log, 
+          :result_matcher => self.result_matcher
+        )
+        result.save
 
         ActiveRecord::Base.connection.close #close connection to DB
         Rails.cache.write("action_#{self.id}:started", false)

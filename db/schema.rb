@@ -16,8 +16,9 @@ ActiveRecord::Schema.define(:version => 20120430072644) do
   create_table "actions", :force => true do |t|
     t.integer  "project_id"
     t.string   "command"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.string   "result_matcher"
+    t.datetime "created_at",     :null => false
+    t.datetime "updated_at",     :null => false
   end
 
   create_table "delayed_jobs", :force => true do |t|
@@ -54,8 +55,9 @@ ActiveRecord::Schema.define(:version => 20120430072644) do
     t.text     "data"
     t.string   "command"
     t.string   "full_log"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.string   "result_matcher"
+    t.datetime "created_at",     :null => false
+    t.datetime "updated_at",     :null => false
   end
 
 end

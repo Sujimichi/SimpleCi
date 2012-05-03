@@ -1,9 +1,14 @@
 
 = form_for action, :as => "action_data"do |f|
 
-  .left
-    = f.label :command
-    = f.text_field :command
-    = f.hidden_field :project_id
+  = f.label :command
+  = f.text_field :command
 
-  .right= f.submit 'Save'
+  = f.label :result_matcher
+  = f.select :result_matcher, options_for_select([:rspec, :cucumber]), :prompt => "Select a 'matcher' for the results"
+
+
+  = f.hidden_field :project_id
+
+  .clear
+  .left= f.submit 'Save'

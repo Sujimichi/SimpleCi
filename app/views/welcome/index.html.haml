@@ -1,3 +1,47 @@
-%h1 SimpleCI
+#welcome
+  .big_heading
+    %h1 SimpleCI
+    %h2 A simple approach to a tedious task
 
-%h2 Yeah bitch
+  .clear
+  .instructions
+
+    %h4 Whats it for
+    %p
+      Imagine you have a git repo and you want to run a set 'commands', ie rake tasks (or tests maybe) and record the results.  You want this to happen automaticaly when the master branch is commited to and you want something to happed depending on the result of the command.
+    %p
+      Overcourse as a good scientist you want tests run in a clean environment and as a paraniod developer you don't want some 3rd party app mucking about in your project.
+    %p
+      The idea behind it is simple, but what you can do with it is quite complex (not changing planes in Ohare complex, but...)
+    %p
+      Create a "project" and point it at your git repo and then define some "actions" for the project.  An action has a command like "bundle exec rake spec" and a "result matcher".  The command can be anything which you could run in a command line in your repo's root dir.  Result matchers (which are simple to define) take the output from the command and pass it into a block as the variable result along with a hash called output.  Within the block the result can be inspected for certain elements and output[:status] can be set to :success or :failure accordingly.  output can also have some other keys set (:message, :summary, :time) which will be displayed in the interface.
+
+
+
+    %h4 How to use it
+    %p press play
+    %p
+      well ok not quite;  click begin to create a new project.  Give it a name and enter the url for the repo.  You can also define commands which are needed to be run to initialize the repo and update it.  ie; if you need to run a 'rake setup' task one time after cloning that can be added as a setup command.
+    %p
+
+    %h5= link_to 'Begin!', new_project_path
+
+    %h4 How does it work
+    %p Right so, how it works is, you see, well....
+    %p
+
+
+
+  - unless @projects.empty?
+    %h2 Projects
+
+    .grid_6
+      - @projects.each do |project|
+        .label= link_to project.name, project
+      = link_to 'New Project', new_project_path
+  -else
+    .grid_8.push_2
+      .welcome_links
+        = link_to_function "Read some drivel", "$('.instructions').show('fast');$('.welcome_links').hide('fast');"
+        or
+        = link_to "Pretend you know what your doing", new_project_path

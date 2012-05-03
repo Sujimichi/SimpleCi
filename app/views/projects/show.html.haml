@@ -1,44 +1,67 @@
 #page.grid960
-  .grid_12
-    %p#notice= notice
-
+  .grid_7
 
     %h1= @project.name
-    %p
-      .value= @project.source_path
-      .value= @project.branch
-
-      %h5 Setup Commands
-      - @project.setup_commands.split("\n").each do |com|
-        .value
-        = "#{ENV['USER']}@#{Socket.gethostname}:~$ #{com}"
-
-      %h5 Update Commands
-      - @project.update_commands.split("\n").each do |com|
-        .value
-        = "#{ENV['USER']}@#{Socket.gethostname}:~$ #{com}"
-
-
+    %h4= "#{@project.source_path} - #{@project.branch}"
+    .clear
 
     = link_to 'Edit', edit_project_path(@project)
     |
     = link_to 'Back', projects_path
+    .clear
+
+    #project_status
+    .job_count
+
+  .grid_5
+    %br
+    %a{:class => 'command_link toggle_setup_commands'}
+      %h5 Setup Commands
+    .clear
+    .setup_commands.hidden
+      - @project.setup_commands.split("\n").each do |com|
+        .command{"data-command" => com.inspect}
+          = "#{ENV['USER']}@#{Socket.gethostname}:~$ #{com}"
+
+
+    %a{:class => 'command_link toggle_update_commands'}
+      %h5 Update Commands
+    .clear
+    .update_commands.hidden
+      - @project.update_commands.split("\n").each do |com|
+        .command{"data-command" => com.inspect}
+          = "#{ENV['USER']}@#{Socket.gethostname}:~$ #{com}"
+
+
+
 
   .grid_12
     %h2 Actions
     - @project.actions.each do |action|
-      .left= action.command
+      .left
+        = action.command
+        = action.result_matcher.inspect
+
       .right= link_to 'Destroy', action, :confirm => 'Are you sure?', :method => :delete
       .clear
 
-  .grid_12
-    %h4 Add Action
-    = render("actions/form", :action => Action.new(:project_id => @project.id))
+
 
   .grid_12
+    %a{:class => 'new_action_link', :href => '#'}
+      %h4 Add Action
+    .grid_8.new_action.hidden
+      = render("actions/form", :action => Action.new(:project_id => @project.id))
+      .left
+        = link_to_function("cancel", "$('.new_action').hide(); $('form#new_action_data :text').val('');")
+
+
+  .grid_12
+
 
     %h2 Results
-    #job_count
+
+
 
     #results_list
       .list_holder
@@ -49,24 +72,76 @@
 
 :javascript
   var poller = undefined;
+  var auto_close = {setup_commands: true, update_commands: true};
 
-  $(function(){ poll() });
+  $(function(){
+    poll_for_status();
 
-  function poll(){
-    var last_result_id = $('#last_result_id').val();
-    var data = {project_id: "#{@project.id}", last_result_id: last_result_id}
+    $('.toggle_setup_commands').bind("click", function(){
+      $('.setup_commands').toggle('fast');
+      auto_close['setup_commands'] = false;
+    });
 
-    $.ajax({ url: "/projects/#{@project.id}", data: {get_job_count: true}, type: "GET", dataType: 'script', success: function(data,textStatus){
-      if(parseInt(data) == 0){
-        $('#job_count').html("");
+    $('.toggle_update_commands').bind("click", function(){
+      $('.update_commands').toggle('fast');
+      auto_close['update_commands'] = false;
+    });
+
+    $('.new_action_link').bind("click", function(){
+      $('.new_action').show('fast');
+    })
+
+  });
+
+
+  function poll_for_status(){
+
+    $.ajax({ url: "/projects/#{@project.id}", data: {project_id: "#{@project.id}", get_status: true}, type: "GET", dataType: 'json', success: function(data,textStatus){
+
+
+      if(data.job_count == 0){
+        if($('.job_count').html() != ""){ poll_for_results() };
+        $('.job_count').html("");
+
       }else{
-        $('#job_count').html("Currently processing " + data + " actions....");
+        $('.job_count').html("Currently processing " + data.job_count + " actions....");
+        poll_for_results()
       };
+
+      $('.command').removeClass('current_command');
+      if(data.initializing){
+        $('.setup_commands').show('fast');
+        $('.setup_commands').find(".command").each(function(){
+          if($(this).data("command") == data.initializing ){ $(this).addClass("current_command") }
+        });
+        $('#project_status').html("Initializing project in <div class='small'>#{SimpleCi::WorkingDir}/project_#{h @project.id}</div>");
+
+      }else if(data.updating){
+        $('.update_commands').show('fast');
+        $('.update_commands').find(".command").each(function(){
+          if($(this).data("command") == data.updating ){ $(this).addClass("current_command") }
+        });
+        $('#project_status').html("Change detected, updating project");
+
+      }else{
+        $('#project_status').html("");
+        if(auto_close['setup_commands'] == true){ $('.setup_commands').hide('fast'); };
+        if(auto_close['update_commands'] == true){ $('.update_commands').hide('fast');};
+      };
+
+      poller = setTimeout(function(){ poll_for_status() }, 2000);
+
     },error: function(r,t,e){
-      alert(e)
+      alert("error yo: " + e)
       alert(r.responseText)
     }})
 
+  };
+
+
+  function poll_for_results(){
+    var last_result_id = $('#last_result_id').val();
+    var data = {project_id: "#{@project.id}", last_result_id: last_result_id}
 
     if(last_result_id != undefined){
 
@@ -85,7 +160,7 @@
           };
         };
 
-        poller = setTimeout(function(){ poll() }, 5000);
+        //poller = setTimeout(function(){ poll_for_results() }, 5000);
       }, error: function(r,t,e){
         alert(e)
         alert(r.responseText)

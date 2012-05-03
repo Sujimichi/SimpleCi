@@ -13,10 +13,21 @@ class ProjectsController < ApplicationController
     @project = Project.find(params[:id])
     respond_to do |format|
       format.html {} 
-      format.js {
-        if params[:get_job_count]
+      format.json {
+        if params[:get_status]
+
+          
+          updating = Rails.cache.fetch("project_#{@project.id}_updating") if Rails.cache.fetch("project_#{@project.id}_updating")
+          initializing = Rails.cache.fetch("project_#{@project.id}_initializing") if Rails.cache.fetch("project_#{@project.id}_initializing")
+
           count = @project.actions.map{|a|  Rails.cache.fetch("action_#{a.id}:started").eql?(true) ? 1 : 0 }.sum
-          return render :text => count
+
+          data = {:job_count => count}
+          data.merge!(:initializing => initializing) if initializing
+          data.merge!(:updating => updating) if updating
+
+
+          return render :json => data.to_json #{:count => count, :info => info}.to_json
         end
       }
     end

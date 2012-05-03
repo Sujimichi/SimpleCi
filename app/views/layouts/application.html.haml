@@ -15,8 +15,10 @@
   %body
     #body
       #header
-        #title
-          = content_for :title
+        %a{:href => '/'}
+          #title
+            = content_for :title
+        #notice= notice
 
       .shadow_border
       #content

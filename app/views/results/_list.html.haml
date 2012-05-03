@@ -11,15 +11,22 @@
       $(function(){ remove_existing_commit("#{commit_id}") });
     .commit{:class => commit_id}
       %h4
-        = "Commit #{commit_id}"
+        .left
+          = link_to_function "Commit #{commit_id}", "$(this).parents('.commit').find('.commit_log').toggle('fast');"
+        .commit_author.right
+      .clear
+      .commit_log.hidden
+      .clear
       - results.each do |result|
         - d= result.display
         - c = "undefined"
         - c = "failure" if d[:status].eql?(:failure)
         - c = "success" if d[:status].eql?(:success)
-        .results
+
+
+        .results{"data-author" => h(d[:author]), "data-commit_log" => h(d[:commit_log])}
           .details{:class => c, :onclick => "toggle_these_results(this)"}
-            .command= result.action.nil? ? "action deleted" : result.action.command
+            .command= result.command
 
             .result_outcome
               - if d[:status].eql?(:success)
@@ -32,7 +39,7 @@
               = d[:summary]
             = "Time taken: #{d[:time]}"
 
-          .small= d.inspect
+          //.small= d.inspect
 
           .result_data.hidden
             %pre
@@ -41,3 +48,11 @@
                   = d[:altered_result]
                 -else
                   = result.data
+
+  :javascript
+    $(function(){
+      $('.commit').each(function(){
+        $(this).find('.commit_author').html($(this).find('.results').data("author"));
+        $(this).find('.commit_log').html("Commit Log:<pre>" + $(this).find('.results').data("commit_log") + "</pre>");
+      });
+    });

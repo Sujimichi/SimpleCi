@@ -31,9 +31,17 @@ p
     :top 0.5em
     :bottom 0.5em
 
+pre
+  :background-color #eee
+  :padding 10px
+  :padding-left none
+  :font-size 11px
+  :overflow show
 
 .heading
-  :margin-bottom 0.2em
+  :margin
+    :top 0.5em
+    :bottom 0.2em
   :color $font-color_heading
   :font
     :weight bold
@@ -45,6 +53,7 @@ p
 h1
   @extend .heading
   :font-size 200%
+  :margin-top 0.2em
 h2
   @extend .heading
   :font-size 150%
@@ -82,6 +91,26 @@ h6
 #content
   @extend .grid960
 
+.big_heading
+  h1
+    :font-size 300%
+  h2
+    :margin 0
+    :margin-left 0.5em
+    :padding-top 1.3em
+  h1, h2, h3
+    :float left
+
+
+.welcome_links
+  :margin-top 2em
+  :font
+    :size 150%
+
+.instructions
+  :margin-top 2em
+
+
 .lastest_result
   :border-bottom 5px solid black
   :padding-bottom 2em
@@ -103,6 +132,44 @@ h6
   :background #CAFACA
 .failure
   :background #FACACA
+
+.command_link
+  :cursor pointer
+.setup_commands
+  @extend .small
+.update_commands
+  @extend .small
+
+.current_command
+  :border-left 2px solid green
+  :font-weight bold
+
+#project_status
+  :float left
+  :margin-top 1em
+  :min-height 1.5em
+  :font
+    :weight bold
+    :size 120%
+.job_count
+  :float left
+  :margin-top 1em
+  :min-height 1.5em
+  :font
+    :weight bold
+    :size 120%
+
+
+#new_action_data
+  input[type='text']
+    :width 100%
+
+
+
+
+
+
+
 
 
 

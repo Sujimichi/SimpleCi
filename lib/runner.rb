@@ -7,7 +7,7 @@ class Runner
 
 
   def do_process
-    @sleep = 60
+    @sleep = 30
 
     puts "checking projects..."
     threads = []    

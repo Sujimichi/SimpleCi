@@ -40,7 +40,8 @@ namespace :workers do
     stop_thread = Workers.stop
     stop_thread.join if stop_thread #wait for thread to finish
     Delayed::Job.destroy_all
-    Workers.start(count)
+    Workers.start(count) unless count.eql?(0)
+    `rm -rf #{SimpleCi::WorkingDir}`
   end
 
 end

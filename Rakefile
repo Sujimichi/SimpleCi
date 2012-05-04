@@ -41,7 +41,6 @@ namespace :workers do
     stop_thread.join if stop_thread #wait for thread to finish
     Delayed::Job.destroy_all
     Workers.start(count) unless count.eql?(0)
-    `rm -rf #{SimpleCi::WorkingDir}`
   end
 
 end
@@ -54,7 +53,9 @@ task :start_observer do
 end
 
 task :reset do  
+  require "#{Rails.root}/config/environment"
   system "rake db:drop:all && rake db:create:all && rake db:migrate && rake db:test:prepare"
+  `rm -rf #{SimpleCi::WorkingDir}`
 end
 
 task :runner do 

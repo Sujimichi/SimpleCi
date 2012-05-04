@@ -1,0 +1,27 @@
+
+= fields_for "actions[]", action do |act|
+  .css_table
+    .label
+      = act.label :command
+    .value
+      = act.text_field :command, :class => 'command_field'
+      = act.select :result_matcher, options_for_select([:rspec, :cucumber]), :prompt => "Select a 'matcher' for the results"
+
+  :javascript
+    $(function(){
+      $('.command_field').unbind("keyup change");
+      $('.command_field').bind("keyup change", function(){
+        if( $(this).val().search("bu") == 0 && $(this).val().search("bundle exec") == -1){
+          $(this).val("bundle exec ")
+        }
+
+        if( $(this).val().search("rspec") != -1){
+          var value = "rspec"
+        }else if( $(this).val().search("cucumber") != -1){
+          var value = "cucumber";
+        };
+
+        $(this).parents('.css_table').find('#actions__result_matcher').val(value)
+      })
+
+    });

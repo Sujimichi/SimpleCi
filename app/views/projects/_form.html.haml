@@ -1,26 +1,58 @@
-= form_for @project do |f|
-  -if @project.errors.any?
-    #error_explanation
-      %h2= "#{pluralize(@project.errors.count, "error")} prohibited this project from being saved:"
-      %ul
-        - @project.errors.full_messages.each do |msg|
-          %li= msg
+#project_form
+  = form_for @project do |f|
+    -if @project.errors.any?
+      #error_explanation
+        %h2= "#{pluralize(@project.errors.count, "error")} prohibited this project from being saved:"
+        %ul
+          - @project.errors.full_messages.each do |msg|
+            %li= msg
 
-  .css_table
-    .label= f.label :name
-    .value= f.text_field :name
-  .css_table
-    .label= f.label :source_path
-    .value= f.text_field :source_path
-  .css_table
-    .label= f.label :branch
-    .value= f.text_field :branch
-  .css_table
-    .label= f.label :setup_commands
-    .value= f.text_area :setup_commands, {:value => @project.setup_commands, :rows => 5}
-  .css_table
-    .label= f.label :update_commands
-    .value= f.text_area :update_commands, {:value => @project.update_commands, :rows => 5}
 
-  .actions
-    = f.submit 'Save'
+
+    .gird_12
+      .css_table
+        .label= f.label :source_path
+        .value= f.text_field :source_path
+      .css_table
+        .label= f.label :name
+        .value= f.text_field :name
+      .css_table
+        .label= f.label :branch
+        .value= f.text_field :branch, :disabled => true
+
+    %br
+    %br
+    .grid_6.alpha
+      .label= f.label :setup_commands
+      .value= f.text_area :setup_commands, {:value => @project.setup_commands, :rows => 5, :cols => 50}
+    .grid_6.omega
+      .label= f.label :update_commands
+      .value= f.text_area :update_commands, {:value => @project.update_commands, :rows => 5, :cols => 50}
+
+
+    .grid_12.alpha
+      %h3 Actions
+      #project_actions
+        - @project.actions.each do |action|
+          = render :partial => 'actions/fields', :locals => {:action => action}
+
+      .right
+        = link_to_function "add another Action", "add_new_action()"
+
+    .clear
+
+    .left
+      = f.submit 'Save'
+
+  :javascript
+    function add_new_action(){
+
+      $.ajax({ url: "/actions/new", data: {}, type: "GET", dataType: 'script', complete: function(data,textStatus){
+          $('#project_actions').append(data.responseText);
+        },
+        error: function(r,d,e){
+        }
+
+      });
+
+    };

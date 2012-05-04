@@ -1,14 +1,9 @@
 
 = form_for action, :as => "action_data"do |f|
-
-  = f.label :command
-  = f.text_field :command
-
-  = f.label :result_matcher
-  = f.select :result_matcher, options_for_select([:rspec, :cucumber]), :prompt => "Select a 'matcher' for the results"
-
-
   = f.hidden_field :project_id
 
-  .clear
+  .left= render :partial => 'actions/fields', :locals => {:action => action}
+
+
   .left= f.submit 'Save'
+  .clear

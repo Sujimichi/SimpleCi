@@ -16,7 +16,7 @@ class ProjectsController < ApplicationController
       format.json {
         if params[:get_status]
 
-          
+
           updating = Rails.cache.fetch("project_#{@project.id}_updating") if Rails.cache.fetch("project_#{@project.id}_updating")
           initializing = Rails.cache.fetch("project_#{@project.id}_initializing") if Rails.cache.fetch("project_#{@project.id}_initializing")
 
@@ -35,6 +35,7 @@ class ProjectsController < ApplicationController
 
   def new
     @project = Project.new
+    @project.actions.build
     respond_to do |format|
       format.html # new.html.erb
     end
@@ -46,8 +47,15 @@ class ProjectsController < ApplicationController
 
   def create
     @project = Project.new(params[:project])
+
+    params[:actions].each do |action|
+      action = @project.actions.new(action.merge(:project => @project, :active => true))
+    end
+
     respond_to do |format|
       if @project.save
+        @project.actions.each{|a| a.save if a.valid?}
+        
         format.html { redirect_to @project, notice: 'Project was successfully created.' }
       else
         format.html { render action: "new" }

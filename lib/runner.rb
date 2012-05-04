@@ -27,7 +27,7 @@ class Runner
  
       if project.update_repo || project.results.empty? || Rails.cache.fetch("force_update_project_#{project.id}")
         puts "\nupdating needed"
-        project.actions.each do |action| 
+        project.active_actions.each do |action| 
           action.prepare
           to_run << action
         end
@@ -36,7 +36,6 @@ class Runner
 
     to_run.each do |action|
       threads << action.run_command(:return_thread => true)
-      sleep 1
     end
 
 

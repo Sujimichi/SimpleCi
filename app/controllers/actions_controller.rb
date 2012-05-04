@@ -22,6 +22,30 @@ class ActionsController < ApplicationController
     end
   end
 
+  def update
+
+    @action = Action.find(params[:id])
+    @action.update_attributes(params[:action_data]) if params[:action_data]
+    @action.active = !@action.active if params[:toggle_active]
+    respond_to do |format|
+      if @action.save
+        format.html {  
+          return render :partial => "actions/action", :locals => {:action => @action}
+        }
+        format.js {
+          return render :partial => "actions/action", :locals => {:action => @action}
+        }
+      else
+        format.html { render action: "edit" }
+        format.js {
+          return render :text => "failed", :status => 422
+        }
+
+      end
+    end
+
+  end
+
   def destroy
     @action = Action.find(params[:id])
     @action.destroy

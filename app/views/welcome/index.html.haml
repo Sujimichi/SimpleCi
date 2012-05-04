@@ -4,13 +4,15 @@
     %h2 A simple approach to a tedious task
 
   .clear
-  .instructions
+  .instructions.hidden
 
     %h4 Whats it for
     %p
       Imagine you have a git repo and you want to run a set 'commands', ie rake tasks (or tests maybe) and record the results.  You want this to happen automaticaly when the master branch is commited to and you want something to happed depending on the result of the command.
     %p
       Overcourse as a good scientist you want tests run in a clean environment and as a paraniod developer you don't want some 3rd party app mucking about in your project.
+
+
     %p
       The idea behind it is simple, but what you can do with it is quite complex (not changing planes in Ohare complex, but...)
     %p
@@ -19,7 +21,7 @@
 
 
     %h4 How to use it
-    %p press play
+    %p well you've got this far, you need to also have run rake runner in the root of this app.
     %p
       well ok not quite;  click begin to create a new project.  Give it a name and enter the url for the repo.  You can also define commands which are needed to be run to initialize the repo and update it.  ie; if you need to run a 'rake setup' task one time after cloning that can be added as a setup command.
     %p

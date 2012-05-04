@@ -1,0 +1,11 @@
+.left
+  = action.command
+  = action.result_matcher.inspect
+
+.right
+  %a{:onclick => "toggle_action_active('#{action.id}')", :href => '#'}
+    = action.active? ? "disable" : "enable"
+  |
+  = link_to 'Destroy', action, :confirm => 'Are you sure?', :method => :delete
+
+.clear

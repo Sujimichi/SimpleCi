@@ -38,12 +38,9 @@
   .grid_12
     %h2 Actions
     - @project.actions.each do |action|
-      .left
-        = action.command
-        = action.result_matcher.inspect
+      .action{:class => "action_#{action.id}"}
+        = render("actions/action", :action => action)
 
-      .right= link_to 'Destroy', action, :confirm => 'Are you sure?', :method => :delete
-      .clear
 
 
 
@@ -92,6 +89,17 @@
     })
 
   });
+
+  function toggle_action_active(action_id){
+    $.ajax({ url: "/actions/" + action_id, data: {action_id: action_id, toggle_active: true}, type: "PUT", dataType: 'text', success: function(data,textStatus){
+        $('.action_'+ action_id).html(data);
+      },
+      error: function(r,t,e){
+        alert(e)
+        alert(r.responseText)
+      }
+    });
+  };
 
 
   function poll_for_status(){

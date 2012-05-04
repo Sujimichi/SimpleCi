@@ -65,6 +65,9 @@ class Action < ActiveRecord::Base
         Rails.cache.write("action_#{self.id}:started", false)
 
       }
+      #VERY IMPORTANT SLEEP!!
+      #TODO comments here!
+      sleep 1
 
     end
 

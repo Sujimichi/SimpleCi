@@ -16,6 +16,10 @@ class Project < ActiveRecord::Base
   has_many :actions
   has_many :results
 
+  def active_actions
+    self.actions.where(:active => true)
+  end
+
   def setup_commands    
     s = super
     s.gsub("'","")

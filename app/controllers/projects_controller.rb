@@ -20,7 +20,7 @@ class ProjectsController < ApplicationController
           updating = Rails.cache.fetch("project_#{@project.id}_updating") if Rails.cache.fetch("project_#{@project.id}_updating")
           initializing = Rails.cache.fetch("project_#{@project.id}_initializing") if Rails.cache.fetch("project_#{@project.id}_initializing")
 
-          count = @project.actions.map{|a|  Rails.cache.fetch("action_#{a.id}:started").eql?(true) ? 1 : 0 }.sum
+          count = @project.actions.map{|a|  Rails.cache.fetch("action_#{a.id}:started").eql?(false) ? 0 : 1 }.sum
 
           data = {:job_count => count}
           data.merge!(:initializing => initializing) if initializing

@@ -26,14 +26,13 @@ class Action < ActiveRecord::Base
 
   #Assuming that prepare has been called, run the command line stored on 'command' inside the app folder for this action
   def run_command args = {:return_thread => false}
-    
 
-    return if Rails.cache.fetch("action_#{self.id}:started")
-
+    return if Rails.cache.fetch("action_#{self.id}:started") #prevent calling when already running.
     Rails.cache.write("action_#{self.id}:started", true)
-    thread = nil
-    in_working_dir do 
 
+    thread = nil
+        
+    in_working_dir do 
 
       Dir.chdir("action_#{self.id}")
       repo_path = Dir.open("./").to_a.select{|d| !['.','..','temp'].include?(d)}.first 
@@ -48,11 +47,9 @@ class Action < ActiveRecord::Base
           log = `git log -n 1`  #get the last commit log
           command_response = `#{self.command}` #Run the command (yes yes no safty catches here yet, this is a dev tool!)
         end
+        commit_id = log.split(" ")[1] #get the commit id from the log.
 
-        commit_id = log.split(" ")[1] #and get the commit id from it.
-        #Create a result and store the data returned by the command, the commit_it and project and action ids
-    
-      
+        #Create a result and store the data returned by the command, the commit_it and project and action ids     
         result = Result.new(
           :action => self, 
           :project_id => self.project_id, 
@@ -68,8 +65,6 @@ class Action < ActiveRecord::Base
         Rails.cache.write("action_#{self.id}:started", false)
 
       }
-
-      sleep 1
 
     end
 

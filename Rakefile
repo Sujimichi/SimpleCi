@@ -52,6 +52,11 @@ task :start_observer do
   Delayed::Job.enqueue(ObserverJob.new(60), :queue => "command_queue")
 end
 
+task :setup do 
+  system "rake db:create:all && rake db:migrate && rake db:test:prepare"
+  puts "\n\nNow run:\n\n\trails s -p 3333 & rake runner"
+end
+
 task :reset do  
   require "#{Rails.root}/config/environment"
   system "rake db:drop:all && rake db:create:all && rake db:migrate && rake db:test:prepare"

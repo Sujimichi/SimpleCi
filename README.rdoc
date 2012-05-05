@@ -2,6 +2,32 @@
 
 SimpleCi is a tool to allow you to automatically run a set of command line commands on a project and store the results whenever the project's master branch is commited to.
 
-For example you might have a rails app and when you commit to *master you want to run a set of tests, ie: `bundle exec rake spec` and `bundle exec cucumber -p all`.  SimpleCi allows you to define a project (with path to a git repo) and the commands you want to run.  Now when you commit to master both these will be automatically run and the outcome from them will be displayed on the projects page.
+For example you might have a rails app and when you commit to *master you want to run a set of tests, ie: <tt>bundle exec rake spec</tt> and <tt>bundle exec cucumber -p all</tt>.  SimpleCi allows you to define a Project (with path to a git repo) and the commands (Actions) which you want to run.  When you commit to master both these will be automatically run and their outcome will be stored and displayed on the projects page.
 
+SimpleCi uses threading and each command is run in a separate instance of the source repo to enable several commands to be processed in parrallel.  With this you can split your tests over several actions and massivly reduce run time.  
+
+*This is still very much under development* 
+
+
+=== Usage
+To use SimpleCi clone it and run a rake setup task to create and migrate the database.  
+
+    git clone git@github.com:Sujimichi/SimpleCi.git
+    cd SimpleCi
+    rake setup
+
+
+To run SimpleCi you need *both* the app server and the 'runner'.  I prefer to run these in separate terms but you can just run;
+
+    rails s -p 3333 & rake runner
+
+Use a different port on the rails server to leave the normal 3000 free for your development.
+
+The runner (lib/runner.rb) is responsible for periodically checking the tracked repos for updates to then running the commands.  This component is not ideal but has repalced a previous implementation involving background workers which was problematic due to environment variables.  see discussion later.
+
+
+
+
+
+    
 

@@ -1,16 +1,17 @@
 = SimpleCi
 
-SimpleCi is a tool to allow you to automatically run a set of command line commands on a project and store the results whenever the project's master branch is commited to.
+SimpleCi is a rails app designed to build and test other apps/projects (anything in a git repo), particularly those with large test suites.  All SimpleCi is, is a git repo observer and a command line runner, with some duck grease to make it go real quick.  
 
-For example you might have a rails app and when you commit to *master you want to run a set of tests, ie: <tt>bundle exec rake spec</tt> and <tt>bundle exec cucumber -p all</tt>.  SimpleCi allows you to define a Project (with path to a git repo) and the commands (Actions) which you want to run.  When you commit to master both these will be automatically run and their outcome will be stored and displayed on the projects page.
-
-SimpleCi uses threading and each command is run in a separate instance of the source repo to enable several commands to be processed in parrallel.  With this you can split your tests over several actions and massivly reduce run time.  
-
-*This is still very much under development* 
+You create a 'Project' and define a git repo to be tracked, then add some 'actions' to the project.  An Action is any command line command which you could run in the root dir of your repo, ie: <tt>rake spec</tt>.  Actions also have a 'result_matcher' which will be used to interpret the output from the command.  Each action will get its own instance of the project dir and is executed in its own thread, enabling all the actions for a project to be processed in parrallel.
 
 
-=== Usage
-To use SimpleCi clone it and run a rake setup task to create and migrate the database.  
+This is still very much under development.  
+
+
+==Setup and Usage
+
+===Getting it running
+Clone SimpleCi and run a rake setup task to create and migrate the database.  
 
     git clone git@github.com:Sujimichi/SimpleCi.git
     cd SimpleCi
@@ -25,9 +26,50 @@ Use a different port on the rails server to leave the normal 3000 free for your 
 
 The runner (lib/runner.rb) is responsible for periodically checking the tracked repos for updates to then running the commands.  This component is not ideal but has repalced a previous implementation involving background workers which was problematic due to environment variables.  see discussion later.
 
+===Usage
+Once the rails server and runner are started use the interface to create a "Project".  A project has a name(optional) and a source_path which should reference the git repo you want to track.  (There may come options for tracking specific branches, for now its just master).  
 
+When you create a project you can define some setup and update commands.  When you create a project for the first time the repo will be cloned into a specific project folder (in ~/simple_ci) and any setup commands will be run.  From then on any changes will be pulled to this repo and the update commands will be run.  The default commands are geared towards a rails app so for example the update commnds include <tt>rake db:migrate</tt>.  
 
-
-
+Finally you need to add some Actions to the project.  Each action simply defines a command line command ie; 'rake spec' and which result matcher to use to interpret the results.
     
+
+===Console Usage
+
+    project = Project.create!(:name => "my project", :source_path => "/home/sujimichi/code/rails/simple_project")
+    project.actions.create!(:command => "bundle exec rspec spec/models/*.rb", :result_matcher => :rspec)
+    project.actions.create!(:command => "bundle exec rspec spec/controllers/*.rb", :result_matcher => :rspec)
+    project.actions.create!(:command => "bundle exec cucumber -p all", :result_matcher => :cucumber)
+
+ 
+
+====Result Matchers
+The notion of SimpleCi has a generic command line runner rather than a specific test runner, means interpretation of the result from commands is disconnected from the main program logic.  Any command output can be interpreted, it just requires a ResultMatcher to be defined.  Currently ResultMatchers are current defined in code (app/helpers/result_matcher.rb) but they will become user definable via the interface.  
+
+A ResultMatcher is simply a block (wrapped in a class) which passes in two variables; the string returned from the command as results and a hash called output.  Within the block you can make assertions about the content of the results and populate outout accordingly.  output must has a key :status and this should be populated with either :success or :failure.  As well as :status output can have :summary, :time, :message keys which will be displayed in the interface. 
+
+Here is an example of a matcher:
+
+    class RspecMatcher < ResultMatcher
+      def process
+        @result.evaluate_results do |result, output|
+          output[:status] = :failure
+          return output if result.blank?
+    
+          output[:summary] = result.split("\n").select{|line| line.match(/^(\d+) examples/) }.join
+          output[:time] = result.split("\n").select{|line| line.match(/^Finished in/)}.join.sub("Finished in","")
+    
+          if output[:summary].include?("0 failures")
+            output[:status] = :success
+          else
+            output[:status] = :failure
+          end
+        end
+      end
+    end
+
+
+
+
+
 

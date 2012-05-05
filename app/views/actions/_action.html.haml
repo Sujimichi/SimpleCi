@@ -3,9 +3,18 @@
   = action.result_matcher.inspect
 
 .right
-  %a{:onclick => "toggle_action_active('#{action.id}')", :href => '#'}
+  %a{ :href => '#', :class => 'toggle_active_link', "data-action_id" => action.id}
     = action.active? ? "disable" : "enable"
   |
   = link_to 'Destroy', action, :confirm => 'Are you sure?', :method => :delete
 
 .clear
+
+:javascript
+  $(function(){
+  $('.toggle_active_link').unbind("click");
+    $('.toggle_active_link').bind("click", function(){
+      toggle_action_active($(this).data("action_id"));
+      return false;
+    })
+  });

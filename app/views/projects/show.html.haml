@@ -15,7 +15,7 @@
 
   .grid_5
     %br
-    %a{:class => 'command_link toggle_setup_commands'}
+    %a{:class => 'command_link toggle_setup_commands plain_link'}
       %h5 Setup Commands
     .clear
     .setup_commands.hidden
@@ -24,7 +24,7 @@
           = "#{ENV['USER']}@#{Socket.gethostname}:~$ #{com}"
 
 
-    %a{:class => 'command_link toggle_update_commands'}
+    %a{:class => 'command_link toggle_update_commands plain_link'}
       %h5 Update Commands
     .clear
     .update_commands.hidden
@@ -45,7 +45,7 @@
 
 
   .grid_12
-    %a{:class => 'new_action_link', :href => '#'}
+    %a{:class => 'new_action_link plain_link', :href => '#'}
       %h4 Add Action
     .new_action.hidden
       = render("actions/form", :action => Action.new(:project_id => @project.id))
@@ -77,16 +77,20 @@
     $('.toggle_setup_commands').bind("click", function(){
       $('.setup_commands').toggle('fast');
       auto_close['setup_commands'] = false;
+      return false;
     });
 
     $('.toggle_update_commands').bind("click", function(){
       $('.update_commands').toggle('fast');
       auto_close['update_commands'] = false;
+      return false;
     });
 
     $('.new_action_link').bind("click", function(){
       $('.new_action').show('fast');
+      return false;
     })
+
 
   });
 
@@ -99,6 +103,7 @@
         alert(r.responseText)
       }
     });
+    return false;
   };
 
 

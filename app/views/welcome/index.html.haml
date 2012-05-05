@@ -5,8 +5,18 @@
 
   .clear
   .instructions.hidden
-
     %h4 Whats it for
+    %p= "SimpleCi is a tool to allow you to automatically run a set of command line commands on a project and store the results whenever the project's master branch is commited to."
+
+    %p= "For example you might have a rails app and when you commit to *master you want to run a set of tests, ie: \"bundle exec rake spec\" and \"bundle exec cucumber -p all\".  SimpleCi allows you to define a project (with path to a git repo) and the commands you want to run.  Now when you commit to master both these will be automatically run and the outcome from them will be displayed on the projects page."
+
+
+    %h4 More than just a spec runner.
+    %p= "SimpleCi is not aimed at just running specs, its aimed at running commands.  Anything which you could run in a terminal in the root of your project can be used as a command.  The output from a command is evalulated with a ResultMatcher which retuns a :success or :failure status depending on the content of the output.  SimpleCi comes with result matchers for rspec and cucumber results but other custom result matchers can be easily defined."
+
+    %p= "It is also desinged to run commands in parrallel.  If you define a number of commands for a project then when the project is updated all the commands will be processed together.  This enables you to parrallel your test suite and cut run times down.  Rather than one command ie; \"rake spec\", you could have two ie \"bundle exec rspec spec/models/*.rb\" and \"bundle exec rspec spec/controllers/*.rb\" and now both commands will be executed together."
+
+  .hidden
     %p
       Imagine you have a git repo and you want to run a set 'commands', ie rake tasks (or tests maybe) and record the results.  You want this to happen automaticaly when the master branch is commited to and you want something to happed depending on the result of the command.
     %p
@@ -35,12 +45,22 @@
 
 
   - unless @projects.empty?
-    %h2 Projects
+    .grid_12.front_page_projects
+      .left
+        %h2
+          Projects
+      %h4
+        = link_to 'New Project', new_project_path
 
-    .grid_6
+      .clear
       - @projects.each do |project|
-        .label= link_to project.name, project
-      = link_to 'New Project', new_project_path
+        %a{:href => project_path(project), :class => 'css_table'}
+          .label= project.name
+          .value= project.source_path
+
+      .clear
+
+
   -else
     .grid_8.push_2
       .welcome_links

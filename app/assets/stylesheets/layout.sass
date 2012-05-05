@@ -111,6 +111,15 @@ h6
   :margin-top 2em
 
 
+.front_page_projects
+  :font-size 120%
+
+  h4
+    :float left
+    :padding-top 0.7em
+    :margin-left 2em
+
+
 .lastest_result
   :border-bottom 5px solid black
   :padding-bottom 2em
@@ -184,6 +193,45 @@ input[id='actions__command']
   :width 40em
 
 
+.plain_link
+  :padding 0
+  &:hover
+    :background-color transparent
+  :background-color transparent
+
+.highlighted_link
+  @extend .plain_link
+  &:hover
+    :background
+      :color $link_back_color_hover
+      :filter alpha(opacity=20)
+      :opacity 0.2
+  +rounded(8px)
+  :padding
+    :left 0.15em
+    :right 0.15em
+
+.dangerous_action_link
+  &:hover
+    :color $error_font_color
+
+.delete_link
+  @extend .dangerous_action_link
+
+.pale_links a
+  @extend .highlighted_link
+  :color $site_white
+  &:hover
+    :color $link_font_color_normal
+
+.plain_links a
+  @extend .plain_link
+
+.highlighted_links a
+  @extend .highlighted_link
+
+.underline_links a
+  :text-decoration underline
 
 
 

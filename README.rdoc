@@ -41,7 +41,7 @@ The default setup and update commands are aimed at initializing and updating a r
 
 Change these commands to fit how you want to build your poject each time.  With these above commands the repo is updated an recent migrations are run.  Perhaps you want to drop and rebuild the DB from scratch on each update and maybe delete a specific folder, ie;
 
-    project.update_commands #=> "bundle exec rake db:drop:all\nbundle exec rake db:create:all\nbundle exec rake db:migrate\nbundle exec rake db:test:prepare\nrm -rf tmp"
+    project.update_commands #=> "rm -rf tmp\nbundle exec rake db:drop:all\nbundle exec rake db:create:all\nbundle exec rake db:migrate\nbundle exec rake db:test:prepare"
 
 
 Finally you need to add some Actions to the project.  Each action simply defines a command line command ie; 'rake spec' and which result matcher to use to interpret the results.  For now you can only select from two inbuild result matchers :rpsec and :cucumber but these will become a user definable component.  see more on Result Matchers later.  You can add actions while creating the project or add them later.  Note; Actions added later are not "active" by default and need enabling by clicking on them on the projects page.  Actions can be togglled active/disabled at anytime, disabled actions are not run when the project updates. 

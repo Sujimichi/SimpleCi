@@ -7,6 +7,10 @@ You create a 'Project' and define a git repo to be tracked, then add some 'actio
 
 This is still very much under development.  
 
+===Limitations
+
+* only works with git repos.  
+* currently file paths work on unix systems only
 
 ==Setup and Usage
 
@@ -24,12 +28,17 @@ To run SimpleCi you need *both* the app server and the 'runner'.  I prefer to ru
 
 Use a different port on the rails server to leave the normal 3000 free for your development.
 
-The runner (lib/runner.rb) is responsible for periodically checking the tracked repos for updates to then running the commands.  This component is not ideal but has repalced a previous implementation involving background workers which was problematic due to environment variables.  see discussion later.
+The runner (lib/runner.rb) is responsible for periodically checking the tracked repos for updates to then running the actions.  This component is not ideal but has repalced a previous implementation involving background workers which was problematic due to environment variables.  see discussion later.
 
 ===Usage
 Once the rails server and runner are started use the interface to create a "Project".  A project has a name(optional) and a source_path which should reference the git repo you want to track.  (There may come options for tracking specific branches, for now its just master).  
 
-When you create a project you can define some setup and update commands.  When you create a project for the first time the repo will be cloned into a specific project folder (in ~/simple_ci) and any setup commands will be run.  From then on any changes will be pulled to this repo and the update commands will be run.  The default commands are geared towards a rails app so for example the update commnds include <tt>rake db:migrate</tt>.  
+A project also has 'setup' and 'update' commands given as a string with commands separated by a new line.  When a project is created the source repo is cloned into a specific project folder (in ~/simple_ci/project_<id>/<repo_name>) and any setup commands will be run in the root of the cloned repo.  The default setup commands are aimed at initializing a rails app;
+
+    project.setup_commands  #=> "bundle install\nbundle exec rake db:create:all\nbundle exec rake db:migrate\nbundle exec rake db:test:prepare"
+    project.update_commands #=> "bundle exec rake db:migrate\nbundle exec rake db:test:prepare"
+
+From then on any changes will be pulled to this repo and the update commands will be run.  The default commands are geared towards a rails app so for example the update commnds include <tt>rake db:migrate</tt>.  
 
 Finally you need to add some Actions to the project.  Each action simply defines a command line command ie; 'rake spec' and which result matcher to use to interpret the results.
     
@@ -44,7 +53,7 @@ Finally you need to add some Actions to the project.  Each action simply defines
  
 
 ====Result Matchers
-The notion of SimpleCi has a generic command line runner rather than a specific test runner, means interpretation of the result from commands is disconnected from the main program logic.  Any command output can be interpreted, it just requires a ResultMatcher to be defined.  Currently ResultMatchers are current defined in code (app/helpers/result_matcher.rb) but they will become user definable via the interface.  
+The notion of SimpleCi as a generic command line runner rather than a specific test runner, means interpretation of the result from commands is disconnected from the main program logic.  Any command output can be interpreted, it just requires a ResultMatcher to be defined.  Currently ResultMatchers are current defined in code (app/helpers/result_matcher.rb) but they will become user definable via the interface.  
 
 A ResultMatcher is simply a block (wrapped in a class) which passes in two variables; the string returned from the command as results and a hash called output.  Within the block you can make assertions about the content of the results and populate outout accordingly.  output must has a key :status and this should be populated with either :success or :failure.  As well as :status output can have :summary, :time, :message keys which will be displayed in the interface. 
 

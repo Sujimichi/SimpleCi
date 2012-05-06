@@ -92,11 +92,11 @@ Here is an example of a matcher:
 
 
 
-== Under the hood
+== Discussion
 
-SimpleCi does has two components which are core to its function and which are a little a typical. 
+SimpleCi does a couple of things which are a bit atypical. 
 
-Firstly is the running of a test_app from within the control_app.  The problem with this is that when executing a command it is executed with the control_apps environment variables and therefore its bundle.  The command needs to be run in the environment and bundle of the test_app.  Thankfully Bundler has a method with_clean_env which take a block to be evaluated outside of the control_apps bundle but this was not quite enough.  Other environment variables where still persisting and so this method had to be modified to clear out further variables and re-instate them when the block ends. 
+Firstly is the running of a test_app from within a control_app.  The problem with this is that when executing a command it is executed with the control_apps bundle and environment variables.  The command needs to be run in the environment of the test_app.  Thankfully Bundler has a method <tt>with_clean_env</tt> which takes a block to be evaluated outside of the control_apps bundle, but this was not quite enough.  Other environment variables where still persisting and so this method had to be modified to clear out further variables and re-instate them when the block ends. 
 
 
 The next challenge was running the commands in parrallel.  I've tried two approaches to this so far.  The first was using delayed_job background workers.  This appeared to be working well and with this approach the "Runner" was not needed.  The problem with delayed_job workers is again an environment variable one and even with Bundler.with_clean_env the commands still seemed to be using the control apps environment.
@@ -118,7 +118,7 @@ With either delayed_job or threads the work done by one action must not share a 
  
 @a has three identical entires.
 
-On order to have threaded execution of commands in different directories the threads are staggered.  There is a one second delayed between the starting of each thread.  This gives each thread time to change into its dir and start executing its command.  Once a command has started execution it does not matter if the working dir is changed.   
+In order to have threaded execution of commands in different directories the threads are staggered.  There is a one second delayed between the starting of each thread.  This gives each thread time to change into its dir and start executing its command.  Once a command has started execution it does not matter if the working dir is changed.   
 
 The aim of SimpleCi is to run commands which will take some time to complete (minutes/hours rather than seconds) so a one second delay on starting threads is not to bad a penalty when this will enable to split your 30 min test suite into 6, 5 minuite commands and have it all complete in arround 5 minuites.
 

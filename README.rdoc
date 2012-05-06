@@ -47,9 +47,13 @@ Change these commands to fit how you want to build your poject each time.  With 
 Finally you need to add some Actions to the project.  Each action simply defines a command line command ie; 'rake spec' and which result matcher to use to interpret the results.  For now you can only select from two inbuild result matchers :rpsec and :cucumber but these will become a user definable component.  see more on Result Matchers later.  You can add actions while creating the project or add them later.  Note; Actions added later are not "active" by default and need enabling by clicking on them on the projects page.  Actions can be togglled active/disabled at anytime, disabled actions are not run when the project updates. 
 
 
+====Spliting Tests over Several Commands
+
+One of my reasons for writing this was to try an cut down the run time of some lengthy test suites.  This is atcheived with theads and parrallel execution of a project's actions.  Therefore rather than creating one action with the command <tt>bundle exec rspec</tt> create several actions each with a different command ie; <tt>bundle exec rspec spec/models/*.rb</tt>, <tt>bundle exec rspec spec/controllers/*.rb</tt>, <tt>bundle exec rspec spec/lib/*.rb</tt> etc.  This will result in the model, controller and lib specs all being processed in parrallel.  
+
     
 
-===Console Usage
+====Console Usage
 
     project = Project.create!(:name => "my project", :source_path => "/home/sujimichi/code/rails/simple_project")
     project.actions.create!(:command => "bundle exec rspec spec/models/*.rb", :result_matcher => :rspec)
@@ -58,7 +62,7 @@ Finally you need to add some Actions to the project.  Each action simply defines
 
  
 
-====Result Matchers
+==Result Matchers
 The notion of SimpleCi as a generic command line runner rather than a specific test runner, means interpretation of the result from commands is disconnected from the main program logic.  Any command output can be interpreted, it just requires a ResultMatcher to be defined.  Currently ResultMatchers are current defined in code (app/helpers/result_matcher.rb) but they will become user definable via the interface.  
 
 A ResultMatcher is simply a block (wrapped in a class) which passes in two variables; the string returned from the command as results and a hash called output.  Within the block you can make assertions about the content of the results and populate outout accordingly.  output must has a key :status and this should be populated with either :success or :failure.  As well as :status output can have :summary, :time, :message keys which will be displayed in the interface. 
@@ -82,6 +86,45 @@ Here is an example of a matcher:
         end
       end
     end
+
+
+
+
+
+
+== Under the hood
+
+SimpleCi does has two components which are core to its function and which are a little a typical. 
+
+Firstly is the running of a test_app from within the control_app.  The problem with this is that when executing a command it is executed with the control_apps environment variables and therefore its bundle.  The command needs to be run in the environment and bundle of the test_app.  Thankfully Bundler has a method with_clean_env which take a block to be evaluated outside of the control_apps bundle but this was not quite enough.  Other environment variables where still persisting and so this method had to be modified to clear out further variables and re-instate them when the block ends. 
+
+
+The next challenge was running the commands in parrallel.  I've tried two approaches to this so far.  The first was using delayed_job background workers.  This appeared to be working well and with this approach the "Runner" was not needed.  The problem with delayed_job workers is again an environment variable one and even with Bundler.with_clean_env the commands still seemed to be using the control apps environment.
+
+So delayed workers have been replaced with threads.  This is where the Runner comes in, it checks the projects repos and executes actions in thier own threads and ensures the threads are closed.  Using the runner keeps the rails server free.
+
+But threads bring another challenge to the table.  
+
+With either delayed_job or threads the work done by one action must not share a common resourse with another action.  Hence each action gets its own copy of the repo to work in.  But current working directory and changing directories is NOT a thread safe activity.  If you create three threads and in each one change to a different dir and do some action, the same dir will be used by each thread.
+
+    dirs = ["/home/sujimichi/coding/rails/", "/home/sujimichi/coding/ruby/", "/home/sujimichi/coding/lab/"]
+    @a = []
+    dirs.each{|d| Dir.chdir(d); sleep 1; @a << `ls` }
+    
+@a contains different entries.
+
+    @a = []
+    dirs.each{|d| Thread.new{ Dir.chdir(d); sleep 1; @a << `ls` }}
+ 
+@a has three identical entires.
+
+On order to have threaded execution of commands in different directories the threads are staggered.  There is a one second delayed between the starting of each thread.  This gives each thread time to change into its dir and start executing its command.  Once a command has started execution it does not matter if the working dir is changed.   
+
+The aim of SimpleCi is to run commands which will take some time to complete (minutes/hours rather than seconds) so a one second delay on starting threads is not to bad a penalty when this will enable to split your 30 min test suite into 6, 5 minuite commands and have it all complete in arround 5 minuites.
+
+
+
+
 
 
 

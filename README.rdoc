@@ -33,14 +33,20 @@ The runner (lib/runner.rb) is responsible for periodically checking the tracked 
 ===Usage
 Once the rails server and runner are started use the interface to create a "Project".  A project has a name(optional) and a source_path which should reference the git repo you want to track.  (There may come options for tracking specific branches, for now its just master).  
 
-A project also has 'setup' and 'update' commands given as a string with commands separated by a new line.  When a project is created the source repo is cloned into a specific project folder (in ~/simple_ci/project_<id>/<repo_name>) and any setup commands will be run in the root of the cloned repo.  The default setup commands are aimed at initializing a rails app;
+A project also has 'setup' and 'update' commands given as a string with commands separated by a new line.  When a project is created the source repo is cloned into a specific project folder (in ~/simple_ci/project_<id>/<repo_name>) and any setup commands will be run in the root of the cloned repo.  Each time the source repo is changed the changes are pulled to the projects folder and the update commands are run.
+The default setup and update commands are aimed at initializing and updating a rails app;
 
-    project.setup_commands  #=> "bundle install\nbundle exec rake db:create:all\nbundle exec rake db:migrate\nbundle exec rake db:test:prepare"
-    project.update_commands #=> "bundle exec rake db:migrate\nbundle exec rake db:test:prepare"
+    Project.new.setup_commands  #=> "bundle install\nbundle exec rake db:create:all\nbundle exec rake db:migrate\nbundle exec rake db:test:prepare"
+    Project.new.update_commands #=> "bundle exec rake db:migrate\nbundle exec rake db:test:prepare"
 
-From then on any changes will be pulled to this repo and the update commands will be run.  The default commands are geared towards a rails app so for example the update commnds include <tt>rake db:migrate</tt>.  
+Change these commands to fit how you want to build your poject each time.  With these above commands the repo is updated an recent migrations are run.  Perhaps you want to drop and rebuild the DB from scratch on each update and maybe delete a specific folder, ie;
 
-Finally you need to add some Actions to the project.  Each action simply defines a command line command ie; 'rake spec' and which result matcher to use to interpret the results.
+    project.update_commands #=> "bundle exec rake db:drop:all\nbundle exec rake db:create:all\nbundle exec rake db:migrate\nbundle exec rake db:test:prepare\nrm -rf tmp"
+
+
+Finally you need to add some Actions to the project.  Each action simply defines a command line command ie; 'rake spec' and which result matcher to use to interpret the results.  For now you can only select from two inbuild result matchers :rpsec and :cucumber but these will become a user definable component.  see more on Result Matchers later.  You can add actions while creating the project or add them later.  Note; Actions added later are not "active" by default and need enabling by clicking on them on the projects page.  Actions can be togglled active/disabled at anytime, disabled actions are not run when the project updates. 
+
+
     
 
 ===Console Usage
